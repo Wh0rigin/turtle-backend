@@ -40,3 +40,31 @@ def init_db_command():
 def init_app(app):
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+
+def query(sqlcmd):
+    conn = get_db()
+
+    conn.row_factory = dict_factory
+
+    cursor = conn.cursor()
+
+    cursor.execute(sqlcmd)
+    result = cursor.fetchone()
+    
+    cursor.close()
+    return result
+
+def execution(sqlcmd):
+    conn = get_db()
+    cursor = conn.execute(sqlcmd)
+    conn.commit()
+    select = "select * from userProfile where id={}".format(cursor.lastrowid)
+    result = query(select)
+    cursor.close()
+    return result
+
+def dict_factory(cursor,row):
+    d = {}
+    for idx,col in enumerate(cursor.description):
+        d[col[0]] = row[idx]
+    return d

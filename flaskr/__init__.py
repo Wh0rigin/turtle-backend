@@ -2,6 +2,7 @@ import os
 
 from flask import Flask
 from flask import request
+from . import db
 
 def create_app(test_config=None):
     # create and configure the app
@@ -11,7 +12,7 @@ def create_app(test_config=None):
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
 
-    from . import db
+    
     db.init_app(app)
 
     if test_config is None:
@@ -33,13 +34,32 @@ def create_app(test_config=None):
         return 'Hello world'
 
     # a simple page that get user msg
-    @app.route('/UserProfile',methods=['GET','POST'])
+    @app.route('/UserProfile',methods=[ 'GET' , 'POST' , 'PUT' , 'DELETE' ])
     def get_name():
-        name = request.args.get('name','')
+        if request.method == 'GET' :
+            uid = request.args.get('id',1)
+            # 1. connect sql
+            # This is a happy path
+            sqlcmd = "select * from userProfile where id={}".format(uid)
+            
+            result = db.query(sqlcmd)
+            
+            print(result)
 
-        if name == 'Wh0rigin' :
-            return dict(name='Wh0rigin')
-        else:
-            return dict(name='Another')
+            if result is None:
+                return dict(msg='Data not found')
+            else:
+                return result
 
+        elif request.method == 'POST':
+            username = request.json.get('username')
+            msg = request.json.get('msg')
+            #TODO 检查是否有相同名称的数据
+            sqlcmd = "insert into userProfile (username,msg) values ('{}',{})".format(username,msg)
+            print(sqlcmd)
+            result = db.execution(sqlcmd)
+            if result is None:
+                return dict(msg="Errno")
+            else:
+                return result
     return app
