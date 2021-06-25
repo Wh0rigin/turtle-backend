@@ -1,0 +1,12 @@
+# database conofig
+
+flask init-db
+
+# start
+
+flask run #(default:127.0.0.1:5000)
+
+# or 
+
+flask run -h {ip} -p {port}
+

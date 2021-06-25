@@ -11,7 +11,6 @@ def create_app(test_config=None):
         SECRET_KEY='dev',
         DATABASE=os.path.join(app.instance_path, 'flaskr.sqlite'),
     )
-
     
     db.init_app(app)
 
@@ -36,6 +35,8 @@ def create_app(test_config=None):
     # a simple page that get user msg
     @app.route('/UserProfile',methods=[ 'GET' , 'POST' , 'PUT' , 'DELETE' ])
     def get_name():
+
+        #GET handler
         if request.method == 'GET' :
             uid = request.args.get('id',1)
             # 1. connect sql
@@ -43,23 +44,38 @@ def create_app(test_config=None):
             sqlcmd = "select * from userProfile where id={}".format(uid)
             
             result = db.query(sqlcmd)
-            
-            print(result)
 
             if result is None:
                 return dict(msg='Data not found')
             else:
                 return result
 
+        #POST handler
         elif request.method == 'POST':
             username = request.json.get('username')
             msg = request.json.get('msg')
             #TODO 检查是否有相同名称的数据
             sqlcmd = "insert into userProfile (username,msg) values ('{}',{})".format(username,msg)
-            print(sqlcmd)
             result = db.execution(sqlcmd)
             if result is None:
                 return dict(msg="Errno")
             else:
                 return result
+
+        #DELETE handler
+        elif request.method == 'DELETE':
+            id = request.json.get('id')
+            sqlcmd = "delete from userProfile where id = {}".format(id)
+            result = db.execution(sqlcmd)
+            return dict(successs=True)
+
+        #PUT handler
+        elif request.method == 'PUT':
+            id = request.json.get('id')
+            username = request.json.get('username')
+            msg = request.json.get('msg')
+            sqlcmd = "update userProfile set username='{}',msg={} where id={}".format(username,msg,id)
+            result = db.execution(sqlcmd)
+            return dict(successs=True)
+            
     return app
